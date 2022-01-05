@@ -1,6 +1,5 @@
 source:
-  type: file
-  path:
+  file-source:
     - app-id: demo1
       path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log
     - app-id: demo2

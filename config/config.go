@@ -2,12 +2,12 @@ package config
 
 // SourceConfig 数据源配置
 type SourceConfig struct {
-	Type string     `mapstructure:"type"`
-	Path []*LogPath `mapstructure:"path"`
+	BufferSize int32          `mapstructure:"buffer-size"`
+	FileSource []*LogFilePath `mapstructure:"file-source"`
 }
 
-// LogPath 日志路径
-type LogPath struct {
+// LogFilePath 日志路径
+type LogFilePath struct {
 	AppId string `mapstructure:"app-id"`
 	Path  string `mapstructure:"path"`
 }
