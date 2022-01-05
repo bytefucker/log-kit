@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/yihongzhi/log-kit/config"
 	"os"
-	"path"
+)
+
+var (
+	cfgFile         string
+	collectorConfig config.CollectorConfig
 )
 
 var collectorCmd = &cobra.Command{
 	Use:   "collector",
 	Short: "collector",
 	Run: func(cmd *cobra.Command, args []string) {
-
+		fmt.Println("OK")
 	},
 }
-
-var cfgFile string
 
 func init() {
 	cobra.OnInitialize(initConfig)
@@ -32,14 +35,15 @@ func initConfig() {
 		// Find home directory.
 		pwd, err := os.Getwd()
 		cobra.CheckErr(err)
-		viper.AddConfigPath(path.Join(pwd, "config"))
+		viper.AddConfigPath(pwd)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("collector")
 	}
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stdout, "Using config file:", viper.ConfigFileUsed())
+		fmt.Fprintln(os.Stdout, "load config file:", viper.ConfigFileUsed())
+		viper.Unmarshal(&collectorConfig)
 	} else {
-		fmt.Fprintln(os.Stderr, "reda config file error:", err)
+		fmt.Fprintln(os.Stderr, "load config file error:", err)
 	}
 }

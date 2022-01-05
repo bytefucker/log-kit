@@ -1,0 +1,15 @@
+source:
+  type: file
+  path:
+    - app-id: demo1
+      path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log
+    - app-id: demo2
+      path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log
+
+destination:
+  kafka:
+    broker-list:
+      - 10.231.50.186:9092
+    topic-name: log_kit
+
+
