@@ -3,65 +3,69 @@ package task
 import (
 	"github.com/hpcloud/tail"
 	logs "github.com/sirupsen/logrus"
-	"github.com/yihongzhi/log-kit/collector/source"
 )
 
-//Tail 任务
+// TailTask Tail 任务
 type TailTask struct {
-	TaskInfo *TailTaskInfo
-	TailObj  *tail.Tail
-	MsgChan  chan *source.LogMessage
-	ExitChan chan int
+	AppId    string
+	LogPath  string
+	MsgChan  chan *LogContent
+	tailFile *tail.Tail
+	exitChan chan int
 }
 
-//任务详情
-type TailTaskInfo struct {
-	AppKey  string `json:"appKey"`  //应用id
-	LogPath string `json:"logPath"` //日志路径
+// LogContent 日志消息体
+type LogContent struct {
+	AppId   string
+	Content string
 }
 
-func NewTailTask(task *TailTaskInfo, msgChan chan *source.LogMessage) *TailTask {
-	tailObj, err := tail.TailFile(task.LogPath, tail.Config{
+func NewTailTask(appId string, path string, bufferSize int32) (*TailTask, error) {
+	tailFile, err := tail.TailFile(path, tail.Config{
 		ReOpen:    true,
 		Follow:    true,
 		MustExist: false,
 		Poll:      true,
 	})
 	if err != nil {
-		logs.Warnf("task [%v] create failed, %v", task, err)
-		return nil
+		return nil, err
 	}
-	tailTask := &TailTask{
-		TailObj:  tailObj,
-		TaskInfo: task,
-		MsgChan:  msgChan,
-		ExitChan: make(chan int, 1),
-	}
-	return tailTask
+	return &TailTask{
+		AppId:    appId,
+		LogPath:  path,
+		tailFile: tailFile,
+		MsgChan:  make(chan *LogContent, bufferSize),
+		exitChan: make(chan int, 1),
+	}, nil
 }
 
-// Start 开始读取日子文件
+// Start 开始读取日志
 func (t *TailTask) Start() {
 	for true {
 		select {
-		case lineMsg, ok := <-t.TailObj.Lines:
+		case lineMsg, ok := <-t.tailFile.Lines:
 			if !ok {
-				logs.Warnf("read obj:[%v] topic:[%v] filed continue", t, t.TaskInfo.AppKey)
+				logs.Warnf("read obj:[%v] topic:[%v] filed continue", t, t.AppId)
 				continue
 			}
 			// 消息为空跳过
 			if lineMsg.Text == "" {
 				continue
 			}
-			msgObj := &source.LogMessage{
-				AppKey: t.TaskInfo.AppKey,
-				Msg:    lineMsg.Text,
+			msgObj := &LogContent{
+				AppId:   t.AppId,
+				Content: lineMsg.Text,
 			}
 			t.MsgChan <- msgObj
 		// 任务退出
-		case <-t.ExitChan:
-			logs.Infof("task [%v] exit ", t.TaskInfo)
+		case <-t.exitChan:
+			logs.Infof("task [%v] exit ", t)
 			return
 		}
 	}
+}
+
+// Stop 停止读取日志
+func (t *TailTask) Stop() {
+	t.exitChan <- 1
 }

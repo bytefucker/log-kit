@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/yihongzhi/log-kit/collector"
 	"github.com/yihongzhi/log-kit/config"
 	"os"
 )
@@ -15,9 +16,18 @@ var (
 
 var collectorCmd = &cobra.Command{
 	Use:   "collector",
-	Short: "collector",
+	Short: "log collector",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("OK")
+		collector, err := collector.NewLogCollector(&collectorConfig)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Init LogCollector error", err)
+			os.Exit(1)
+		}
+		err = collector.Start()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Start LogCollector error", err)
+			os.Exit(1)
+		}
 	},
 }
 
