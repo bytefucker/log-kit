@@ -6,7 +6,7 @@ type LogMessage struct {
 	Time    time.Time `json:"time"`
 	Host    string    `json:"host"`
 	AppId   string    `json:"app_id"`
-	Content string    `json:"Content"`
+	Content string    `json:"content"`
 }
 
 type LogDestination interface {
