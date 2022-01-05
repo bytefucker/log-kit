@@ -20,11 +20,11 @@ type LogContent struct {
 	Content string
 }
 
-func NewTailTask(appId string, path string, bufferSize int32) (*TailTask, error) {
+func NewTailTask(appId string, path string, msgChan chan *LogContent) (*TailTask, error) {
 	tailFile, err := tail.TailFile(path, tail.Config{
 		ReOpen:    true,
 		Follow:    true,
-		MustExist: false,
+		MustExist: true,
 		Poll:      true,
 	})
 	if err != nil {
@@ -34,7 +34,7 @@ func NewTailTask(appId string, path string, bufferSize int32) (*TailTask, error)
 		AppId:    appId,
 		LogPath:  path,
 		tailFile: tailFile,
-		MsgChan:  make(chan *LogContent, bufferSize),
+		MsgChan:  msgChan,
 		exitChan: make(chan int, 1),
 	}, nil
 }

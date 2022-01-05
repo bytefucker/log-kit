@@ -13,18 +13,18 @@ type kafkaDestination struct {
 	TopicName string
 }
 
-func (d *kafkaDestination) Send(content *LogMessage) error {
-	text, err := json.Marshal(&content)
+func (d *kafkaDestination) Send(message *LogMessage) error {
+	text, err := json.Marshal(&message)
 	if err != nil {
 		log.Debug("serilazid msg failed ", err)
 		return err
 	}
-	message := sarama.ProducerMessage{
+	msg := sarama.ProducerMessage{
 		Topic: d.TopicName,
-		Key:   sarama.StringEncoder(content.AppId),
+		Key:   sarama.StringEncoder(message.AppId),
 		Value: sarama.StringEncoder(text),
 	}
-	_, _, err = d.Client.SendMessage(&message)
+	_, _, err = d.Client.SendMessage(&msg)
 	if err != nil {
 		log.Error("kafka kafka msg failed", err)
 		return err

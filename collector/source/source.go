@@ -9,6 +9,6 @@ type LogMessage struct {
 }
 
 type LogSource interface {
-	Start()
+	Start() error
 	GetMessage() *task.LogContent
 }

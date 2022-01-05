@@ -4,6 +4,7 @@ import (
 	"github.com/yihongzhi/log-kit/collector/dest"
 	"github.com/yihongzhi/log-kit/collector/source"
 	"github.com/yihongzhi/log-kit/config"
+	"time"
 )
 
 type LogCollector struct {
@@ -27,5 +28,18 @@ func NewLogCollector(config *config.CollectorConfig) (*LogCollector, error) {
 }
 
 func (c *LogCollector) Start() error {
+	if err := c.source.Start(); err != nil {
+		return err
+	}
+	for true {
+		log := c.source.GetMessage()
+		message := dest.LogMessage{
+			Time:    time.Now(),
+			Host:    "",
+			AppId:   log.AppId,
+			Content: log.Content,
+		}
+		c.dest.Send(&message)
+	}
 	return nil
 }

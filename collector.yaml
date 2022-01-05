@@ -1,4 +1,5 @@
 source:
+  buffer-size: 1000
   file-source:
     - app-id: demo1
       path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log

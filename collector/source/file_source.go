@@ -7,26 +7,29 @@ import (
 )
 
 type fileSource struct {
-	Tasks []*task.TailTask
+	Tasks   []*task.TailTask
+	MsgChan chan *task.LogContent
 }
 
-func (c *fileSource) GetMessage() *task.LogContent {
-	return nil
-}
-
-func (c *fileSource) Start() {
+func (c *fileSource) Start() error {
 	for _, task := range c.Tasks {
 		go task.Start()
 	}
+	return nil
+}
+
+func (c *fileSource) GetMessage() *task.LogContent {
+	return <-c.MsgChan
 }
 
 func NewFileSource(config *config.SourceConfig) (*fileSource, error) {
 	var list []*task.TailTask
+	var msgChan = make(chan *task.LogContent, config.BufferSize)
 	for _, file := range config.FileSource {
-		if tailTask, err := task.NewTailTask(file.AppId, file.Path, config.BufferSize); err == nil {
+		if tailTask, err := task.NewTailTask(file.AppId, file.Path, msgChan); err == nil {
 			list = append(list, tailTask)
 			log.Infof("init task %v", tailTask)
 		}
 	}
-	return &fileSource{Tasks: list}, nil
+	return &fileSource{Tasks: list, MsgChan: msgChan}, nil
 }
