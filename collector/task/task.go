@@ -4,6 +4,7 @@ import (
 	"github.com/hpcloud/tail"
 	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
+	"io"
 	"regexp"
 	"strings"
 )
@@ -30,6 +31,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 		Follow:    true,
 		MustExist: false,
 		Poll:      true,
+		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd},
 	})
 	if err != nil {
 		return nil, err
