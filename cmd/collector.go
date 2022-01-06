@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/yihongzhi/log-kit/collector"
@@ -20,14 +21,14 @@ var collectorCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		collector, err := collector.NewLogCollector(&collectorConfig)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Init LogCollector error", err)
+			log.Errorln("Init LogCollector error", err)
 			os.Exit(1)
 		}
-		err = collector.Start()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Start LogCollector error", err)
+		if err := collector.Start(); err != nil {
+			log.Errorln("Start LogCollector error", err)
 			os.Exit(1)
 		}
+		log.Infoln("Start LogCollector Success")
 	},
 }
 
