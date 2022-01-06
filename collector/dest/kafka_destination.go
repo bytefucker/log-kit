@@ -24,18 +24,19 @@ func (d *kafkaDestination) Send(message *LogMessage) error {
 		Key:   sarama.StringEncoder(message.AppId),
 		Value: sarama.StringEncoder(text),
 	}
-	_, _, err = d.Client.SendMessage(&msg)
+	partition, offset, err := d.Client.SendMessage(&msg)
 	if err != nil {
 		log.Error("kafka kafka msg failed", err)
 		return err
 	}
-	log.Debugf("send to kafka -->toppic:[%s],msg:[%v]", d.TopicName, string(text))
+	log.Debugf("send to kafka -->toppic:[%s],partition:[%d],offset:[%d],msg:[%s]",
+		d.TopicName, partition, offset, string(text))
 	return nil
 }
 
 func NewKafkaDestination(config *config.KafkaConfig) (*kafkaDestination, error) {
 	conf := sarama.NewConfig()
-	conf.Producer.RequiredAcks = sarama.WaitForAll
+	conf.Producer.RequiredAcks = sarama.WaitForLocal
 	conf.Producer.Partitioner = sarama.NewRandomPartitioner
 	conf.Producer.Return.Successes = true
 	conf.Producer.Timeout = 5 * time.Second

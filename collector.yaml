@@ -1,3 +1,4 @@
+log-level: debug
 source:
   buffer-size: 1000
   file-source:

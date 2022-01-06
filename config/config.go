@@ -25,6 +25,7 @@ type KafkaConfig struct {
 
 // CollectorConfig 日志收集器配置
 type CollectorConfig struct {
+	LogLevel    string             `mapstructure:"log-level"`
 	Source      *SourceConfig      `mapstructure:"source"`
 	Destination *DestinationConfig `mapstructure:"destination"`
 }

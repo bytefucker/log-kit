@@ -19,6 +19,9 @@ var collectorCmd = &cobra.Command{
 	Use:   "collector",
 	Short: "log collector",
 	Run: func(cmd *cobra.Command, args []string) {
+		level, _ := log.ParseLevel(collectorConfig.LogLevel)
+		log.SetLevel(level)
+		log.SetOutput(os.Stdout)
 		collector, err := collector.NewLogCollector(&collectorConfig)
 		if err != nil {
 			log.Errorln("Init LogCollector error", err)
