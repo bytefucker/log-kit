@@ -8,7 +8,7 @@ RUN go install  -v ./...
 
 #final stage
 FROM alpine:3.11
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates bash
 WORKDIR /opt/log-kit
 COPY --from=builder /go/bin/* .
 COPY --from=builder /go/src/log-kit/*.yaml .
