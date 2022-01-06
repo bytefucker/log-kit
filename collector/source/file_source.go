@@ -15,7 +15,7 @@ func NewFileSource(config *config.SourceConfig) (*fileSource, error) {
 	var list []*task.TailTask
 	var msgChan = make(chan *task.LogContent, config.BufferSize)
 	for _, file := range config.FileSource {
-		if tailTask, err := task.NewTailTask(file.AppId, file.Path, msgChan); err == nil {
+		if tailTask, err := task.NewTailTask(file, msgChan); err == nil {
 			list = append(list, tailTask)
 			log.Infof("Init TailTask: app_id=%s path=%s", tailTask.AppId, tailTask.LogPath)
 		}

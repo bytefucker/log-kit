@@ -1,11 +1,11 @@
-log-level: debug
+log-level: info
 source:
   buffer-size: 1000
   file-source:
     - app-id: demo1
-      path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log
-    - app-id: demo2
-      path: /Users/yihongzhi/Downloads/megvii.docking.biz.docking-manager/current.log
+      path: /Users/yihongzhi/Downloads/current.log_galaxy_analysis-1_20220106_13.log
+      multiline:
+        pattern: '^[0-2][0-9][0-9][0-9]-[0-5][0-9]-[0-5][0-9]'
 
 destination:
   kafka:
