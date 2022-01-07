@@ -116,6 +116,7 @@ func multilineTask(t *TailTask) {
 			return
 		case <-time.After(2 * time.Second):
 			t.sendLog(buffer.String())
+			buffer.Reset()
 		}
 	}
 }
