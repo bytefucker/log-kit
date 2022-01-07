@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Shopify/sarama v1.30.1
+	github.com/elastic/go-elasticsearch/v7 v7.16.0 // indirect
 	github.com/hpcloud/tail v1.0.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.8.0 // indirect

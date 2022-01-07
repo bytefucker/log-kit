@@ -17,5 +17,5 @@ kafka:
 elastic:
   url: https://10.122.94.94:9200
   username: elastic
-  password: 1234566
+  password: xoESLDqdYh5
 

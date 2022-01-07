@@ -5,33 +5,28 @@ import (
 	"github.com/Shopify/sarama"
 	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
-	"time"
+	"github.com/yihongzhi/log-kit/kafka"
 )
 
-type KafkaProducer struct {
-	Client    sarama.SyncProducer
+type KafkaSender struct {
+	Producer  *kafka.Producer
 	TopicName string
 }
 
-func NewKafkaSender(config *config.KafkaConfig) (*KafkaProducer, error) {
-	conf := sarama.NewConfig()
-	conf.Producer.RequiredAcks = sarama.WaitForLocal
-	conf.Producer.Partitioner = sarama.NewHashPartitioner
-	conf.Producer.Return.Successes = true
-	conf.Producer.Timeout = 5 * time.Second
-	producer, err := sarama.NewSyncProducer(config.BrokerList, conf)
+func NewKafkaSender(config *config.KafkaConfig) (*KafkaSender, error) {
+	producer, err := kafka.NewKafkaProducer(config)
 	if err != nil {
 		log.Error("SyncProduce create failed !", err)
 		return nil, err
 	}
-	return &KafkaProducer{
-		Client:    producer,
+	return &KafkaSender{
+		Producer:  producer,
 		TopicName: config.TopicName,
 	}, nil
 }
 
 // SendMessage 发送日志消息
-func (d *KafkaProducer) SendMessage(message *LogMessage) error {
+func (d *KafkaSender) SendMessage(message *LogMessage) error {
 	text, err := json.Marshal(&message)
 	if err != nil {
 		log.Errorln("serialization msg failed ", err)
@@ -42,7 +37,7 @@ func (d *KafkaProducer) SendMessage(message *LogMessage) error {
 		Key:   sarama.StringEncoder(message.AppId),
 		Value: sarama.StringEncoder(text),
 	}
-	partition, offset, err := d.Client.SendMessage(&msg)
+	partition, offset, err := d.Producer.SendMessage(&msg)
 	if err != nil {
 		log.Errorln("send kafka msg failed", err)
 		return err
