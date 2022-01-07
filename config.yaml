@@ -12,6 +12,7 @@ source:
 kafka:
   broker-list:
     - 10.122.94.94:9192
+  group-id: log-kit-group
   topic-name: log_kit
 #es服务
 elastic:

@@ -27,6 +27,7 @@ type Analyzer struct {
 type KafkaConfig struct {
 	BrokerList []string `mapstructure:"broker-list"`
 	TopicName  string   `mapstructure:"topic-name"`
+	GroupId    string   `mapstructure:"group-id"`
 }
 
 type ElasticConfig struct {

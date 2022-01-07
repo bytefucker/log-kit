@@ -1,9 +1,11 @@
 package elastic
 
 import (
+	"crypto/tls"
 	es "github.com/elastic/go-elasticsearch/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
+	"net/http"
 )
 
 // ESClient elastic服务
@@ -16,6 +18,11 @@ func NewESClient(config *config.ElasticConfig) (*ESClient, error) {
 		Addresses: []string{config.Url},
 		Username:  config.Username,
 		Password:  config.Password,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
 	}
 	client, err := es.NewClient(cfg)
 	if err != nil {

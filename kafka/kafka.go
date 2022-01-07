@@ -8,7 +8,7 @@ import (
 )
 
 type Consumer struct {
-	sarama.Consumer
+	sarama.ConsumerGroup
 }
 
 type Producer struct {
@@ -17,7 +17,7 @@ type Producer struct {
 
 func NewKafkaConsumer(config *config.KafkaConfig) (*Consumer, error) {
 	cfg := sarama.NewConfig()
-	consumer, err := sarama.NewConsumer(config.BrokerList, cfg)
+	consumer, err := sarama.NewConsumerGroup(config.BrokerList, config.GroupId, cfg)
 	if err != nil {
 		log.Errorln("init kafka consumer error", err)
 		return nil, err
