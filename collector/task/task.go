@@ -32,7 +32,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 		Follow:    true,
 		MustExist: false,
 		Poll:      true,
-		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd},
+		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}, //启动任务从最后行开始读取
 		Logger:    logs.StandardLogger(),
 	})
 	if err != nil {
@@ -50,8 +50,8 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 
 // Start 开始读取日志
 func (t *TailTask) Start() {
-	logs.Infof("Start Task: appId=[%s] path=[%s]", t.AppId, t.LogPath)
-	if t.Multiline == nil || t.Multiline.Pattern == "" {
+	logs.Infof("Start Task: appId=[%s] path=[%s] multiline=[%v]", t.AppId, t.LogPath, t.Multiline)
+	if t.Multiline == nil || !t.Multiline.Enable {
 		singleLineTask(t)
 	} else {
 		multilineTask(t)
@@ -105,7 +105,7 @@ func multilineTask(t *TailTask) {
 				continue
 			}
 			if regex.MatchString(lineMsg.Text) {
-				//如果新的日志从日期开始，先发送缓冲区的数据
+				//检测到新行，先发送缓冲区日志
 				t.sendLog(buffer.String())
 				buffer.Reset()
 			}
@@ -114,7 +114,8 @@ func multilineTask(t *TailTask) {
 		case <-t.exitChan:
 			logs.Infof("task %s exit ", t.AppId)
 			return
-		case <-time.After(2 * time.Second):
+		case <-time.After(5 * time.Second):
+			//超过5s无新日志产生，发送缓冲区日志，防止日志最后一行读不到
 			t.sendLog(buffer.String())
 			buffer.Reset()
 		}

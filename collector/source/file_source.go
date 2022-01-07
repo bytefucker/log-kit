@@ -11,9 +11,9 @@ type fileSource struct {
 	msgChan chan *task.LogContent
 }
 
-func NewFileSource(config *config.SourceConfig) (*fileSource, error) {
+func NewFileSource(config *config.SourceConfig, bufferSize int32) (*fileSource, error) {
 	var list []*task.TailTask
-	var msgChan = make(chan *task.LogContent, config.BufferSize)
+	var msgChan = make(chan *task.LogContent, bufferSize)
 	for _, file := range config.FileSource {
 		if tailTask, err := task.NewTailTask(file, msgChan); err == nil {
 			list = append(list, tailTask)

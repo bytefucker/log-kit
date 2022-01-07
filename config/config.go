@@ -2,24 +2,25 @@ package config
 
 // SourceConfig 数据源配置
 type SourceConfig struct {
-	BufferSize int32            `mapstructure:"buffer-size"`
 	FileSource []*LogFileSource `mapstructure:"file-source"`
 }
 
 // LogFileSource 日志路径
 type LogFileSource struct {
-	Multiline *Multiline `mapstructure:"multiline"`
 	AppId     string     `mapstructure:"app-id"`
 	Path      string     `mapstructure:"path"`
+	Multiline *Multiline `mapstructure:"multiline"`
+	Analyzer  *Analyzer  `mapstructure:"analyzer"`
 }
 
 type Multiline struct {
+	Enable  bool   `mapstructure:"enable"`
 	Pattern string `mapstructure:"pattern"`
 }
 
-// DestinationConfig 接收源配置
-type DestinationConfig struct {
-	Kafka *KafkaConfig `mapstructure:"kafka"`
+type Analyzer struct {
+	Type    string `mapstructure:"type"`
+	Pattern string `mapstructure:"pattern"`
 }
 
 // KafkaConfig Kafka配置
@@ -28,9 +29,17 @@ type KafkaConfig struct {
 	TopicName  string   `mapstructure:"topic-name"`
 }
 
-// CollectorConfig 日志收集器配置
-type CollectorConfig struct {
-	LogLevel    string             `mapstructure:"log-level"`
-	Source      *SourceConfig      `mapstructure:"source"`
-	Destination *DestinationConfig `mapstructure:"destination"`
+type ElasticConfig struct {
+	Url      string `mapstructure:"url"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+}
+
+// AppConfig 日志收集器配置
+type AppConfig struct {
+	LogLevel   string         `mapstructure:"log-level"`   //日志等级
+	BufferSize int32          `mapstructure:"buffer-size"` //缓冲对内大小
+	Source     *SourceConfig  `mapstructure:"source"`      //日志源
+	Kafka      *KafkaConfig   `mapstructure:"kafka"`
+	Elastic    *ElasticConfig `mapstructure:"elastic"`
 }

@@ -1,4 +1,4 @@
-package dest
+package sender
 
 import "time"
 
@@ -9,7 +9,7 @@ type LogMessage struct {
 	Content string    `json:"content"`
 }
 
-type LogDestination interface {
-	// Send 发送日志
-	Send(message *LogMessage) error
+type LogMessageSender interface {
+	// SendMessage  发送日志
+	SendMessage(message *LogMessage) error
 }
