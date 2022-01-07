@@ -16,7 +16,7 @@ type kafkaDestination struct {
 func (d *kafkaDestination) Send(message *LogMessage) error {
 	text, err := json.Marshal(&message)
 	if err != nil {
-		log.Debug("serilazid msg failed ", err)
+		log.Errorln("Serialization msg failed ", err)
 		return err
 	}
 	msg := sarama.ProducerMessage{
@@ -26,11 +26,10 @@ func (d *kafkaDestination) Send(message *LogMessage) error {
 	}
 	partition, offset, err := d.Client.SendMessage(&msg)
 	if err != nil {
-		log.Error("kafka kafka msg failed", err)
+		log.Errorln("kafka kafka msg failed", err)
 		return err
 	}
-	log.Debugf("send to kafka -->toppic:[%s],partition:[%d],offset:[%d],msg:[%s]",
-		d.TopicName, partition, offset, string(text))
+	log.Debugf("send to kafka appId:[%s],toppic:[%s],partition:[%d],offset:[%d]", message.AppId, d.TopicName, partition, offset)
 	return nil
 }
 
