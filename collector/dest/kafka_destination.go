@@ -37,7 +37,7 @@ func (d *kafkaDestination) Send(message *LogMessage) error {
 func NewKafkaDestination(config *config.KafkaConfig) (*kafkaDestination, error) {
 	conf := sarama.NewConfig()
 	conf.Producer.RequiredAcks = sarama.WaitForLocal
-	conf.Producer.Partitioner = sarama.NewRandomPartitioner
+	conf.Producer.Partitioner = sarama.NewHashPartitioner
 	conf.Producer.Return.Successes = true
 	conf.Producer.Timeout = 5 * time.Second
 	producer, err := sarama.NewSyncProducer(config.BrokerList, conf)
