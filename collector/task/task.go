@@ -7,6 +7,7 @@ import (
 	"io"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // TailTask Tail 任务
@@ -32,6 +33,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 		MustExist: false,
 		Poll:      true,
 		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd},
+		Logger:    logs.StandardLogger(),
 	})
 	if err != nil {
 		return nil, err
@@ -48,7 +50,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 
 // Start 开始读取日志
 func (t *TailTask) Start() {
-	logs.Infof("Start Task: appId=%s path=%s", t.AppId, t.LogPath)
+	logs.Infof("Start Task: appId=[%s] path=[%s]", t.AppId, t.LogPath)
 	if t.Multiline == nil || t.Multiline.Pattern == "" {
 		singleLineTask(t)
 	} else {
@@ -62,6 +64,17 @@ func (t *TailTask) Stop() {
 	close(t.exitChan)
 }
 
+func (t *TailTask) sendLog(log string) {
+	if log == "" {
+		return
+	}
+	msgObj := &LogContent{
+		AppId:   t.AppId,
+		Content: log,
+	}
+	t.msgChan <- msgObj
+}
+
 //单行日志
 func singleLineTask(t *TailTask) {
 	for true {
@@ -71,11 +84,7 @@ func singleLineTask(t *TailTask) {
 				logs.Warnf("read obj:[%s] filed continue", t.LogPath)
 				continue
 			}
-			msgObj := &LogContent{
-				AppId:   t.AppId,
-				Content: lineMsg.Text,
-			}
-			t.msgChan <- msgObj
+			t.sendLog(lineMsg.Text)
 		// 任务退出
 		case <-t.exitChan:
 			logs.Infof("task %s exit ", t.AppId)
@@ -97,13 +106,7 @@ func multilineTask(t *TailTask) {
 			}
 			if regex.MatchString(lineMsg.Text) {
 				//如果新的日志从日期开始，先发送缓冲区的数据
-				if buffer.Len() > 0 {
-					msgObj := &LogContent{
-						AppId:   t.AppId,
-						Content: buffer.String(),
-					}
-					t.msgChan <- msgObj
-				}
+				t.sendLog(buffer.String())
 				buffer.Reset()
 			}
 			buffer.WriteString(lineMsg.Text)
@@ -111,6 +114,8 @@ func multilineTask(t *TailTask) {
 		case <-t.exitChan:
 			logs.Infof("task %s exit ", t.AppId)
 			return
+		case <-time.After(2 * time.Second):
+			t.sendLog(buffer.String())
 		}
 	}
 }
