@@ -23,6 +23,7 @@ func init() {
 	collectorCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is config.yaml)")
 	rootCmd.AddCommand(collectorCmd)
 	rootCmd.AddCommand(analyzerCmd)
+	rootCmd.AddCommand(managerCmd)
 }
 
 func initConfig() {

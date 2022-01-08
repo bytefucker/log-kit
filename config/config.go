@@ -36,6 +36,10 @@ type ElasticConfig struct {
 	Password string `mapstructure:"password"`
 }
 
+type ManagerServer struct {
+	Port string `mapstructure:"port"`
+}
+
 // AppConfig 日志收集器配置
 type AppConfig struct {
 	LogLevel   string         `mapstructure:"log-level"`   //日志等级
@@ -43,4 +47,5 @@ type AppConfig struct {
 	Source     *SourceConfig  `mapstructure:"source"`      //日志源
 	Kafka      *KafkaConfig   `mapstructure:"kafka"`
 	Elastic    *ElasticConfig `mapstructure:"elastic"`
+	Manager    *ManagerServer `mapstructure:"manager"`
 }

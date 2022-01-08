@@ -20,3 +20,6 @@ elastic:
   username: elastic
   password: xoESLDqdYh5
 
+#web-manager
+manager:
+  port: 8080

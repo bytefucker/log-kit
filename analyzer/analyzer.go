@@ -2,6 +2,9 @@ package analyzer
 
 import (
 	"context"
+	"fmt"
+	"github.com/Shopify/sarama"
+	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/analyzer/parser"
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/elastic"
@@ -34,9 +37,31 @@ func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
 }
 
 func (a *LogAnalyzer) Start() error {
-	err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, nil)
-	if err != nil {
-		return err
+	handler := &logMessageHandler{}
+	if err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, handler); err != nil {
+		logs.Panicf("Error from consumer: %v", err)
 	}
+	logs.Println("Sarama consumer up and running!...")
+	return nil
+}
+
+type logMessageHandler struct {
+}
+
+func (h *logMessageHandler) Setup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (h *logMessageHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (h *logMessageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for msg := range claim.Messages() {
+		fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
+		// 标记消息已处理，sarama会自动提交
+		session.MarkMessage(msg, "")
+	}
+	claim.Messages()
 	return nil
 }

@@ -17,6 +17,10 @@ type Producer struct {
 
 func NewKafkaConsumer(config *config.KafkaConfig) (*Consumer, error) {
 	cfg := sarama.NewConfig()
+	cfg.Consumer.Offsets.AutoCommit.Interval = 1 * time.Second
+	cfg.Consumer.Offsets.AutoCommit.Enable = true
+	cfg.Consumer.Offsets.Initial = sarama.OffsetOldest
+	cfg.Consumer.Offsets.Retry.Max = 3
 	consumer, err := sarama.NewConsumerGroup(config.BrokerList, config.GroupId, cfg)
 	if err != nil {
 		log.Errorln("init kafka consumer error", err)
