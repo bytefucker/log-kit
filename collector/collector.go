@@ -5,13 +5,15 @@ import (
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/collector/source"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/metrics"
 	"os"
 	"time"
 )
 
 type LogCollector struct {
-	source source.LogSource
-	sender sender.LogMessageSender
+	source  source.LogSource
+	sender  sender.LogMessageSender
+	metrics *metrics.Client
 }
 
 func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
@@ -25,11 +27,19 @@ func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
 		log.Errorln("Init LogMessageSender error", err)
 		return nil, err
 	}
-	return &LogCollector{source: source, sender: sender}, nil
+	client := metrics.NewMetricsClient(config.Manager.Port)
+	return &LogCollector{
+		source:  source,
+		sender:  sender,
+		metrics: client,
+	}, nil
 }
 
 // Start 开启日志收集任务
 func (c *LogCollector) Start() error {
+	if err := c.metrics.Start(); err != nil {
+		return err
+	}
 	if err := c.source.Start(); err != nil {
 		return err
 	}
