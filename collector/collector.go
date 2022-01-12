@@ -1,19 +1,20 @@
 package collector
 
 import (
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/collector/source"
 	"github.com/yihongzhi/log-kit/config"
-	"github.com/yihongzhi/log-kit/metrics"
+	"net/http"
 	"os"
 	"time"
 )
 
 type LogCollector struct {
-	source  source.LogSource
-	sender  sender.LogMessageSender
-	metrics *metrics.Client
+	port   string
+	source source.LogSource
+	sender sender.LogMessageSender
 }
 
 func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
@@ -27,20 +28,20 @@ func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
 		log.Errorln("Init LogMessageSender error", err)
 		return nil, err
 	}
-	client := metrics.NewMetricsClient(config.Manager.Port)
 	return &LogCollector{
-		source:  source,
-		sender:  sender,
-		metrics: client,
+		port:   config.Port,
+		source: source,
+		sender: sender,
 	}, nil
 }
 
 // Start 开启日志收集任务
 func (c *LogCollector) Start() error {
-	if err := c.metrics.Start(); err != nil {
+	if err := c.source.Start(); err != nil {
 		return err
 	}
-	if err := c.source.Start(); err != nil {
+	http.Handle("/metrics", promhttp.Handler())
+	if err := http.ListenAndServe(":"+c.port, nil); err != nil {
 		return err
 	}
 	hostname, _ := os.Hostname()

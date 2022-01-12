@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/kafka"
+	"github.com/yihongzhi/log-kit/metrics"
 )
 
 type KafkaSender struct {
@@ -43,5 +44,6 @@ func (d *KafkaSender) SendMessage(message *LogMessage) error {
 		return err
 	}
 	log.Debugf("send to kafka appId:[%s],toppic:[%s],partition:[%d],offset:[%d]", message.AppId, d.TopicName, partition, offset)
+	metrics.LogSendInc(message.AppId)
 	return nil
 }

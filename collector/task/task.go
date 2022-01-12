@@ -4,6 +4,7 @@ import (
 	"github.com/hpcloud/tail"
 	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/metrics"
 	"io"
 	"regexp"
 	"strings"
@@ -73,6 +74,7 @@ func (t *TailTask) sendLog(log string) {
 		Content: log,
 	}
 	t.msgChan <- msgObj
+	metrics.LogReadInc(t.AppId)
 }
 
 //单行日志

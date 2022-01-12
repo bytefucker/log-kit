@@ -2,26 +2,28 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
 )
 
-var logCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "task_counter",
+var logTailReadCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "log_tail_read_count",
 }, []string{"app_id"})
 
-type Client struct {
-	Port string
+var logKafkaSendCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "log_kafka_send_count",
+}, []string{"app_id"})
+
+func init() {
+	prometheus.MustRegister(logTailReadCount, logKafkaSendCount)
 }
 
-func NewMetricsClient(port string) *Client {
-	prometheus.MustRegister(logCounter)
-	return &Client{
-		Port: port,
-	}
+func LogReadInc(appId string) {
+	logTailReadCount.With(prometheus.Labels{
+		"app_id": appId,
+	}).Inc()
 }
 
-func (c *Client) Start() error {
-	http.Handle("/metrics", promhttp.Handler())
-	return http.ListenAndServe(":"+c.Port, nil)
+func LogSendInc(appId string) {
+	logKafkaSendCount.With(prometheus.Labels{
+		"app_id": appId,
+	}).Inc()
 }
