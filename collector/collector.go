@@ -37,15 +37,13 @@ func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
 
 // Start 开启日志收集任务
 func (c *LogCollector) Start() error {
+	http.Handle("/metrics", promhttp.Handler())
+	go http.ListenAndServe(":"+c.port, nil)
 	if err := c.source.Start(); err != nil {
 		return err
 	}
-	http.Handle("/metrics", promhttp.Handler())
-	if err := http.ListenAndServe(":"+c.port, nil); err != nil {
-		return err
-	}
 	hostname, _ := os.Hostname()
-	for true {
+	for {
 		log := c.source.GetMessage()
 		message := sender.LogMessage{
 			Time:    time.Now(),

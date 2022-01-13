@@ -1,4 +1,4 @@
-port: 8080
+web-port: 28080
 log-level: debug
 buffer-size: 1000
 #日志源
@@ -20,7 +20,3 @@ elastic:
   url: https://10.122.94.94:9200
   username: elastic
   password: xoESLDqdYh5
-
-#web-manager
-manager:
-  port: 8080
