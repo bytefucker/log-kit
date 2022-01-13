@@ -9,6 +9,7 @@ import (
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/elastic"
 	"github.com/yihongzhi/log-kit/kafka"
+	"sync"
 )
 
 // LogAnalyzer 日志解析服务
@@ -37,11 +38,21 @@ func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
 }
 
 func (a *LogAnalyzer) Start() error {
-	handler := &logMessageHandler{}
-	if err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, handler); err != nil {
-		logs.Panicf("Error from consumer: %v", err)
-	}
-	logs.Println("Sarama consumer up and running!...")
+	h := &logMessageHandler{}
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			if err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, h); err != nil {
+				// 当setup失败的时候，error会返回到这里
+				logs.Errorf("Error from consumer: %v", err)
+				return
+			}
+		}
+	}()
+	logs.Infoln("Sarama consumer up and running!...")
+	wg.Wait()
 	return nil
 }
 
