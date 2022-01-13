@@ -19,7 +19,7 @@ func NewManagerServer(config *config.AppConfig) (*WebServer, error) {
 	e.GET("/", hello)
 	return &WebServer{
 		server: e,
-		port:   config.Manager.Port,
+		port:   config.Port,
 	}, nil
 }
 
