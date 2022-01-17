@@ -1,0 +1,42 @@
+{
+  "mappings": {
+    "dynamic": false,
+    "dynamic_templates": [
+      {
+        "field": {
+          "match_mapping_type": "*",
+          "path_match": "field.*",
+          "mapping": {
+            "type": "keyword"
+          }
+        }
+      }
+    ],
+    "properties": {
+      "time": {
+        "type": "date"
+      },
+      "level": {
+        "type": "keyword"
+      },
+      "tx_id": {
+        "type": "keyword"
+      },
+      "span_id": {
+        "type": "keyword"
+      },
+      "app_id": {
+        "type": "keyword"
+      },
+      "host": {
+        "type": "keyword"
+      },
+      "parse_time": {
+        "type": "date"
+      },
+      "content": {
+        "type": "text"
+      }
+    }
+  }
+}
