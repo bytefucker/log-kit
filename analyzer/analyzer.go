@@ -2,10 +2,11 @@ package analyzer
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"github.com/Shopify/sarama"
 	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/analyzer/parser"
+	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/elastic"
 	"github.com/yihongzhi/log-kit/kafka"
@@ -38,7 +39,9 @@ func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
 }
 
 func (a *LogAnalyzer) Start() error {
-	h := &logMessageHandler{}
+	h := &logMessageHandler{
+		parser: parser.NewJavaLogParser(),
+	}
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
@@ -57,6 +60,7 @@ func (a *LogAnalyzer) Start() error {
 }
 
 type logMessageHandler struct {
+	parser parser.LogParser
 }
 
 func (h *logMessageHandler) Setup(session sarama.ConsumerGroupSession) error {
@@ -69,8 +73,13 @@ func (h *logMessageHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 
 func (h *logMessageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
-		// 标记消息已处理，sarama会自动提交
+		//fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
+		message := &sender.LogMessage{}
+		err := json.Unmarshal(msg.Value, message)
+		if err != nil {
+			return err
+		}
+		h.parser.Parse(message)
 		session.MarkMessage(msg, "")
 	}
 	claim.Messages()

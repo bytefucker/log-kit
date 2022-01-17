@@ -1,6 +1,9 @@
 package parser
 
-import "time"
+import (
+	"github.com/yihongzhi/log-kit/collector/sender"
+	"time"
+)
 
 type LogContent struct {
 	Time      time.Time         `json:"time"`
@@ -16,5 +19,5 @@ type LogContent struct {
 
 // LogParser 日志解析器
 type LogParser interface {
-	Parse() (*LogContent, error)
+	Parse(log *sender.LogMessage) (*LogContent, error)
 }
