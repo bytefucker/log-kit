@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/collector/source"
@@ -14,12 +15,12 @@ import (
 var log = logger.Log
 
 type LogCollector struct {
-	port   string
+	port   int
 	source source.LogSource
 	sender sender.LogMessageSender
 }
 
-func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
+func NewCollector(config *config.AppConfig) (*LogCollector, error) {
 	source, err := source.NewFileSource(config.Source, config.BufferSize)
 	if err != nil {
 		log.Errorln("Init LogSource error", err)
@@ -37,23 +38,26 @@ func NewLogCollector(config *config.AppConfig) (*LogCollector, error) {
 	}, nil
 }
 
-// Start 开启日志收集任务
-func (c *LogCollector) Start() error {
-	http.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe(":"+c.port, nil)
+// ListenAndServe 开启日志收集任务
+func (c *LogCollector) ListenAndServe() error {
 	if err := c.source.Start(); err != nil {
 		return err
 	}
 	hostname, _ := os.Hostname()
-	for {
-		log := c.source.GetMessage()
-		message := sender.LogMessage{
-			Time:    time.Now(),
-			Host:    hostname,
-			AppId:   log.AppId,
-			Content: log.Content,
+	//开启日志收集
+	go func(hostname string) {
+		for {
+			log := c.source.GetMessage()
+			message := sender.LogMessage{
+				Time:    time.Now(),
+				Host:    hostname,
+				AppId:   log.AppId,
+				Content: log.Content,
+			}
+			c.sender.SendMessage(&message)
 		}
-		c.sender.SendMessage(&message)
-	}
-	return nil
+	}(hostname)
+	http.Handle("/metrics", promhttp.Handler())
+	log.Infof("collector listen on port %d", c.port)
+	return http.ListenAndServe(fmt.Sprintf(":%d", c.port), nil)
 }

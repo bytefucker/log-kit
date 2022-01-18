@@ -13,14 +13,14 @@ var analyzerCmd = &cobra.Command{
 		if appConfig.LogLevel != "" {
 			log.SetLevel(appConfig.LogLevel)
 		}
-		logAnalyzer, err := analyzer.NewLogAnalyzer(&appConfig)
+		analyzer, err := analyzer.NewLogAnalyzer(&appConfig)
 		if err != nil {
-			log.Errorln("init logAnalyzer error", err)
+			log.Errorln("init log analyzer error", err)
 			os.Exit(1)
 			return
 		}
-		if logAnalyzer.Start(); err != nil {
-			log.Errorln("Start logAnalyzer error", err)
+		if analyzer.Start(); err != nil {
+			log.Errorln("start log analyzer error", err)
 			os.Exit(1)
 			return
 		}

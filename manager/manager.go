@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/yihongzhi/log-kit/config"
@@ -8,7 +9,7 @@ import (
 )
 
 type WebServer struct {
-	port   string
+	port   int
 	server *echo.Echo
 }
 
@@ -24,7 +25,7 @@ func NewManagerServer(config *config.AppConfig) (*WebServer, error) {
 }
 
 func (s *WebServer) Start() error {
-	return s.server.Start(":" + s.port)
+	return s.server.Start(fmt.Sprintf(":%d", s.port))
 }
 
 // Handler

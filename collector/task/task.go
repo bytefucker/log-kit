@@ -2,14 +2,16 @@ package task
 
 import (
 	"github.com/hpcloud/tail"
-	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/logger"
 	"github.com/yihongzhi/log-kit/metrics"
 	"io"
 	"regexp"
 	"strings"
 	"time"
 )
+
+var log = logger.Log
 
 // TailTask Tail 任务
 type TailTask struct {
@@ -34,7 +36,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 		MustExist: false,
 		Poll:      true,
 		Location:  &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}, //启动任务从最后行开始读取
-		Logger:    logs.StandardLogger(),
+		Logger:    log.Logger,
 	})
 	if err != nil {
 		return nil, err
@@ -51,7 +53,7 @@ func NewTailTask(source *config.LogFileSource, msgChan chan<- *LogContent) (*Tai
 
 // Start 开始读取日志
 func (t *TailTask) Start() {
-	logs.Infof("Start Task: appId=[%s] path=[%s] multiline=[%v]", t.AppId, t.LogPath, t.Multiline)
+	log.Infof("start task: appId=[%s] path=[%s] multiline=[%+v]", t.AppId, t.LogPath, t.Multiline)
 	if t.Multiline == nil || !t.Multiline.Enable {
 		singleLineTask(t)
 	} else {
@@ -83,13 +85,13 @@ func singleLineTask(t *TailTask) {
 		select {
 		case lineMsg, ok := <-t.tailFile.Lines:
 			if !ok {
-				logs.Warnf("read obj:[%s] filed continue", t.LogPath)
+				log.Warnf("read obj:[%s] filed continue", t.LogPath)
 				continue
 			}
 			t.sendLog(lineMsg.Text)
 		// 任务退出
 		case <-t.exitChan:
-			logs.Infof("task %s exit ", t.AppId)
+			log.Infof("task %s exit ", t.AppId)
 			return
 		}
 	}
@@ -103,7 +105,7 @@ func multilineTask(t *TailTask) {
 		select {
 		case lineMsg, ok := <-t.tailFile.Lines:
 			if !ok {
-				logs.Warnf("read obj:[%s] filed continue", t.LogPath)
+				log.Warnf("read obj:[%s] filed continue", t.LogPath)
 				continue
 			}
 			if regex.MatchString(lineMsg.Text) {
@@ -114,7 +116,7 @@ func multilineTask(t *TailTask) {
 			buffer.WriteString(lineMsg.Text)
 		// 任务退出
 		case <-t.exitChan:
-			logs.Infof("task %s exit ", t.AppId)
+			log.Infof("task %s exit ", t.AppId)
 			return
 		case <-time.After(5 * time.Second):
 			//超过5s无新日志产生，发送缓冲区日志，防止日志最后一行读不到

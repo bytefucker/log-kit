@@ -13,15 +13,14 @@ var collectorCmd = &cobra.Command{
 		if appConfig.LogLevel != "" {
 			log.SetLevel(appConfig.LogLevel)
 		}
-		collector, err := collector.NewLogCollector(&appConfig)
+		collector, err := collector.NewCollector(&appConfig)
 		if err != nil {
-			log.Errorln("Init LogCollector error", err)
+			log.Errorln("init log collector error", err)
 			os.Exit(1)
 		}
-		if err := collector.Start(); err != nil {
-			log.Errorln("Start LogCollector error", err)
+		if err := collector.ListenAndServe(); err != nil {
+			log.Errorln("start log collector error", err)
 			os.Exit(1)
 		}
-		log.Infoln("Start LogCollector Success")
 	},
 }

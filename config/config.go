@@ -41,7 +41,7 @@ type ManagerServer struct {
 
 // AppConfig 日志收集器配置
 type AppConfig struct {
-	Port       string         `mapstructure:"web-port"`
+	Port       int            `mapstructure:"web-port"`
 	LogLevel   string         `mapstructure:"log-level"`   //日志等级
 	BufferSize int32          `mapstructure:"buffer-size"` //缓冲对内大小
 	Source     *SourceConfig  `mapstructure:"source"`      //日志源
