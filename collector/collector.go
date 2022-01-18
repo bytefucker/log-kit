@@ -2,14 +2,16 @@ package collector
 
 import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/collector/source"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/logger"
 	"net/http"
 	"os"
 	"time"
 )
+
+var log = logger.Log
 
 type LogCollector struct {
 	port   string

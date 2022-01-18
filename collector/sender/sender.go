@@ -1,6 +1,11 @@
 package sender
 
-import "time"
+import (
+	"github.com/yihongzhi/log-kit/logger"
+	"time"
+)
+
+var log = logger.Log
 
 type LogMessage struct {
 	Time    time.Time `json:"time"`

@@ -2,7 +2,6 @@ package parser
 
 import (
 	"errors"
-	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"regexp"
 	"strings"
@@ -22,15 +21,15 @@ func NewJavaLogParser() *JavaLogParser {
 	}
 }
 
-func (p *JavaLogParser) Parse(log *sender.LogMessage) (*LogContent, error) {
-	matches := p.regx.FindStringSubmatch(log.Content)
+func (p *JavaLogParser) Parse(logMessage *sender.LogMessage) (*LogContent, error) {
+	matches := p.regx.FindStringSubmatch(logMessage.Content)
 	if matches == nil || len(matches) != len(p.fields)+1 {
 		return nil, errors.New("matches failed")
 	}
 	fieldMap := make(map[string]string, len(p.fields))
-	logs.Debugln("------------------------------")
+	log.Debugln("------------------------------")
 	for i, match := range matches {
-		logs.Debugln(i, "->", strings.TrimSpace(match))
+		log.Debugln(i, "->", strings.TrimSpace(match))
 		if i > 0 {
 			fieldMap[p.fields[i-1]] = match
 		}
@@ -41,8 +40,8 @@ func (p *JavaLogParser) Parse(log *sender.LogMessage) (*LogContent, error) {
 		Level:     fieldMap["level"],
 		TxId:      fieldMap["tx_id"],
 		SpanId:    fieldMap["span_id"],
-		AppId:     log.AppId,
-		Host:      log.Host,
+		AppId:     logMessage.AppId,
+		Host:      logMessage.Host,
 		ParseTime: time.Now(),
 		Field: map[string]string{
 			"thread": fieldMap["thread"],

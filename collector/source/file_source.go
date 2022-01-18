@@ -1,7 +1,6 @@
 package source
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/collector/task"
 	"github.com/yihongzhi/log-kit/config"
 )

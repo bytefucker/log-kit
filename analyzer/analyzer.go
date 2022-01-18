@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	logs "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/analyzer/parser"
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/elastic"
 	"github.com/yihongzhi/log-kit/kafka"
+	"github.com/yihongzhi/log-kit/logger"
 	"sync"
 )
+
+var log = logger.Log
 
 // LogAnalyzer 日志解析服务
 type LogAnalyzer struct {
@@ -50,12 +52,12 @@ func (a *LogAnalyzer) Start() error {
 		for {
 			if err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, h); err != nil {
 				// 当setup失败的时候，error会返回到这里
-				logs.Errorf("Error from consumer: %v", err)
+				log.Errorf("Error from consumer: %v", err)
 				return
 			}
 		}
 	}()
-	logs.Infoln("Sarama consumer up and running!...")
+	log.Infoln("Sarama consumer up and running!...")
 	wg.Wait()
 	return nil
 }

@@ -1,6 +1,11 @@
 package source
 
-import "github.com/yihongzhi/log-kit/collector/task"
+import (
+	"github.com/yihongzhi/log-kit/collector/task"
+	"github.com/yihongzhi/log-kit/logger"
+)
+
+var log = logger.Log
 
 // LogMessage 日志消息体
 type LogMessage struct {

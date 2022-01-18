@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/yihongzhi/log-kit/analyzer"
 	"os"
@@ -11,9 +10,9 @@ var analyzerCmd = &cobra.Command{
 	Use:   "analyzer",
 	Short: "log analyzer",
 	Run: func(cmd *cobra.Command, args []string) {
-		level, _ := log.ParseLevel(appConfig.LogLevel)
-		log.SetLevel(level)
-		log.SetOutput(os.Stdout)
+		if appConfig.LogLevel != "" {
+			log.SetLevel(appConfig.LogLevel)
+		}
 		logAnalyzer, err := analyzer.NewLogAnalyzer(&appConfig)
 		if err != nil {
 			log.Errorln("init logAnalyzer error", err)

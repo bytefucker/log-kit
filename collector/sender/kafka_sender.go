@@ -3,7 +3,6 @@ package sender
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
 	"github.com/yihongzhi/log-kit/kafka"
 	"github.com/yihongzhi/log-kit/metrics"

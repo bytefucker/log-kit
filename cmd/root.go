@@ -5,12 +5,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/logger"
 	"os"
 )
 
 var (
 	cfgFile   string
 	appConfig config.AppConfig
+	log       = logger.Log
 )
 
 var rootCmd = &cobra.Command{
@@ -20,7 +22,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	collectorCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is config.yaml)")
 	rootCmd.AddCommand(collectorCmd)
 	rootCmd.AddCommand(analyzerCmd)
 	rootCmd.AddCommand(managerCmd)
