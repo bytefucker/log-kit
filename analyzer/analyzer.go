@@ -41,6 +41,7 @@ func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
 func (a *LogAnalyzer) Start() error {
 	h := &logMessageHandler{
 		parser: parser.NewJavaLogParser(),
+		client: a.EsClient,
 	}
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -61,6 +62,7 @@ func (a *LogAnalyzer) Start() error {
 
 type logMessageHandler struct {
 	parser parser.LogParser
+	client *elastic.ESClient
 }
 
 func (h *logMessageHandler) Setup(session sarama.ConsumerGroupSession) error {
@@ -73,13 +75,15 @@ func (h *logMessageHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 
 func (h *logMessageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		//fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
 		message := &sender.LogMessage{}
 		err := json.Unmarshal(msg.Value, message)
 		if err != nil {
 			return err
 		}
-		h.parser.Parse(message)
+		content, err := h.parser.Parse(message)
+		if err == nil {
+			h.client.InsertDoc("alias_log_kit", content)
+		}
 		session.MarkMessage(msg, "")
 	}
 	claim.Messages()

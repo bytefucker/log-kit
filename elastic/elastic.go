@@ -1,8 +1,13 @@
 package elastic
 
 import (
+	"bytes"
+	"context"
 	"crypto/tls"
+	"encoding/json"
+	"errors"
 	es "github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
 	"net/http"
@@ -35,4 +40,26 @@ func NewESClient(config *config.ElasticConfig) (*ESClient, error) {
 		return nil, err
 	}
 	return &ESClient{client}, nil
+}
+
+//插入文档
+func (c *ESClient) InsertDoc(index string, data interface{}) error {
+	body, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	request := esapi.IndexRequest{
+		Index: index,
+		Body:  bytes.NewReader(body),
+	}
+	res, err := request.Do(context.Background(), c)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	log.Infoln("insert one document :", res.String())
+	if http.StatusCreated != res.StatusCode {
+		return errors.New(res.String())
+	}
+	return nil
 }
