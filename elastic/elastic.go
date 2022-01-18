@@ -34,10 +34,15 @@ func NewESClient(config *config.ElasticConfig) (*ESClient, error) {
 		log.Errorln("init es client error:", err)
 		return nil, err
 	}
-	_, err = client.Ping()
+	res, err := client.Ping()
 	if err != nil {
-		log.Errorln("Ping es client error:", err)
+		log.Errorln("ping es error:", err)
 		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		log.Errorln("connect es error:", res.String())
+		return nil, errors.New(res.String())
 	}
 	return &ESClient{client}, nil
 }
@@ -57,7 +62,7 @@ func (c *ESClient) InsertDoc(index string, data interface{}) error {
 		return err
 	}
 	defer res.Body.Close()
-	log.Infoln("insert one document :", res.String())
+	log.Debugln("insert one document :", res.String())
 	if http.StatusCreated != res.StatusCode {
 		return errors.New(res.String())
 	}
