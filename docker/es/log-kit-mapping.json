@@ -1,10 +1,17 @@
 {
+  "index_patterns": "log-kit-*",
+  "order": 0,
+  "settings": {
+    "number_of_shards": 1
+  },
+  "aliases": {
+    "alias_log_kit": {}
+  },
   "mappings": {
     "dynamic": false,
     "dynamic_templates": [
       {
         "field": {
-          "match_mapping_type": "*",
           "path_match": "field.*",
           "mapping": {
             "type": "keyword"
@@ -30,6 +37,10 @@
       },
       "host": {
         "type": "keyword"
+      },
+      "field": {
+        "dynamic": true,
+        "type": "object"
       },
       "parse_time": {
         "type": "date"

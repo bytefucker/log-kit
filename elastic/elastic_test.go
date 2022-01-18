@@ -22,30 +22,31 @@ func TestNewESClient(t *testing.T) {
 	if err != nil {
 		return
 	}
-	content := parser.LogContent{
-		Time:      time.Now(),
-		Level:     "INFO",
-		TxId:      "",
-		SpanId:    "",
-		AppId:     "demo",
-		Host:      "127.0.0.1",
-		ParseTime: time.Now(),
-		Field: map[string]string{
-			"Thread": "trap-executor-0",
-			"class":  "c.n.d.s.r.aws.ConfigClusterResolver",
-		},
-		Content: "Resolving eureka endpoints via configuration",
+	for i := 0; i < 100; i++ {
+		content := parser.LogContent{
+			Time:      time.Now(),
+			Level:     "INFO",
+			TxId:      "",
+			SpanId:    "",
+			AppId:     "demo",
+			Host:      "127.0.0.1",
+			ParseTime: time.Now(),
+			Field: map[string]string{
+				"thread": "trap-executor-0",
+				"method": "c.n.d.s.r.aws.ConfigClusterResolver",
+			},
+			Content: "Resolving eureka endpoints via configuration",
+		}
+		body, _ := json.Marshal(content)
+		request := esapi.IndexRequest{
+			Index: "alias_log_kit",
+			Body:  bytes.NewReader(body),
+		}
+		res, err := request.Do(context.Background(), client)
+		if err != nil {
+			return
+		}
+		fmt.Println(res.String())
+		res.Body.Close()
 	}
-	body, _ := json.Marshal(content)
-	request := esapi.IndexRequest{
-		Index: "log_kit",
-		//DocumentID: "1",
-		Body: bytes.NewReader(body),
-	}
-	res, err := request.Do(context.Background(), client)
-	if err != nil {
-		return
-	}
-	defer res.Body.Close()
-	fmt.Println(res.String())
 }
