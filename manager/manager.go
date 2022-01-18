@@ -8,24 +8,24 @@ import (
 	"net/http"
 )
 
-type WebServer struct {
-	port   int
-	server *echo.Echo
+type Server struct {
+	port int
+	echo *echo.Echo
 }
 
-func NewManagerServer(config *config.AppConfig) (*WebServer, error) {
+func NewManagerServer(config *config.AppConfig) (*Server, error) {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.GET("/", hello)
-	return &WebServer{
-		server: e,
-		port:   config.Port,
+	return &Server{
+		echo: e,
+		port: config.Port,
 	}, nil
 }
 
-func (s *WebServer) Start() error {
-	return s.server.Start(fmt.Sprintf(":%d", s.port))
+func (s *Server) Start() error {
+	return s.echo.Start(fmt.Sprintf(":%d", s.port))
 }
 
 // Handler
