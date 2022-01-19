@@ -9,8 +9,7 @@ import (
 )
 
 type KafkaSender struct {
-	Producer  *kafka.Producer
-	TopicName string
+	Producer *kafka.Producer
 }
 
 func NewKafkaSender(config *config.KafkaConfig) (*KafkaSender, error) {
@@ -19,10 +18,7 @@ func NewKafkaSender(config *config.KafkaConfig) (*KafkaSender, error) {
 		log.Error("SyncProduce create failed !", err)
 		return nil, err
 	}
-	return &KafkaSender{
-		Producer:  producer,
-		TopicName: config.TopicName,
-	}, nil
+	return &KafkaSender{Producer: producer}, nil
 }
 
 // SendMessage 发送日志消息
@@ -33,7 +29,7 @@ func (d *KafkaSender) SendMessage(message *LogMessage) error {
 		return err
 	}
 	msg := sarama.ProducerMessage{
-		Topic: d.TopicName,
+		Topic: d.Producer.TopicName,
 		Key:   sarama.StringEncoder(message.AppId),
 		Value: sarama.StringEncoder(text),
 	}
@@ -42,7 +38,7 @@ func (d *KafkaSender) SendMessage(message *LogMessage) error {
 		log.Errorln("send kafka msg failed", err)
 		return err
 	}
-	log.Debugf("send to kafka appId:[%s],toppic:[%s],partition:[%d],offset:[%d]", message.AppId, d.TopicName, partition, offset)
-	metrics.LogSendInc(message.AppId)
+	log.Debugf("send to kafka appId:[%s],toppic:[%s],partition:[%d],offset:[%d]", message.AppId, d.Producer.TopicName, partition, offset)
+	metrics.SendKafkaLogInc(message.AppId)
 	return nil
 }

@@ -57,7 +57,7 @@ func (a *LogAnalyzer) Start() error {
 			}
 		}
 	}()
-	log.Infoln("Sarama consumer up and running!...")
+	log.Infoln("consumer up and running!...")
 	wg.Wait()
 	return nil
 }

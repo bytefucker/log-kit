@@ -12,18 +12,28 @@ var logKafkaSendCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "log_kafka_send_count",
 }, []string{"app_id"})
 
+var logKafkaReadCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "log_kafka_read_count",
+}, []string{"app_id"})
+
 func init() {
-	prometheus.MustRegister(logTailReadCount, logKafkaSendCount)
+	prometheus.MustRegister(logTailReadCount, logKafkaSendCount, logKafkaReadCount)
 }
 
-func LogReadInc(appId string) {
+func ReadFileLogInc(appId string) {
 	logTailReadCount.With(prometheus.Labels{
 		"app_id": appId,
 	}).Inc()
 }
 
-func LogSendInc(appId string) {
+func SendKafkaLogInc(appId string) {
 	logKafkaSendCount.With(prometheus.Labels{
+		"app_id": appId,
+	}).Inc()
+}
+
+func ReadKafkaLogInc(appId string) {
+	logKafkaReadCount.With(prometheus.Labels{
 		"app_id": appId,
 	}).Inc()
 }

@@ -8,10 +8,12 @@ import (
 	"errors"
 	es "github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	log "github.com/sirupsen/logrus"
 	"github.com/yihongzhi/log-kit/config"
+	"github.com/yihongzhi/log-kit/logger"
 	"net/http"
 )
+
+var log = logger.Log
 
 // ESClient elastic服务
 type ESClient struct {
@@ -44,6 +46,7 @@ func NewESClient(config *config.ElasticConfig) (*ESClient, error) {
 		log.Errorln("connect es error:", res.String())
 		return nil, errors.New(res.String())
 	}
+	log.Infoln("connect es success:", res.String())
 	return &ESClient{client}, nil
 }
 

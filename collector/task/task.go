@@ -76,7 +76,7 @@ func (t *TailTask) sendLog(log string) {
 		Content: log,
 	}
 	t.msgChan <- msgObj
-	metrics.LogReadInc(t.AppId)
+	metrics.ReadFileLogInc(t.AppId)
 }
 
 //单行日志

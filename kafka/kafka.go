@@ -8,10 +8,13 @@ import (
 )
 
 type Consumer struct {
+	TopicName string
 	sarama.ConsumerGroup
 }
 
 type Producer struct {
+	TopicName string
+	GroupId   string
 	sarama.SyncProducer
 }
 
@@ -26,7 +29,10 @@ func NewKafkaConsumer(config *config.KafkaConfig) (*Consumer, error) {
 		log.Errorln("init kafka consumer error", err)
 		return nil, err
 	}
-	return &Consumer{consumer}, nil
+	return &Consumer{
+		TopicName:     config.TopicName,
+		ConsumerGroup: consumer,
+	}, nil
 }
 
 func NewKafkaProducer(config *config.KafkaConfig) (*Producer, error) {
@@ -40,5 +46,9 @@ func NewKafkaProducer(config *config.KafkaConfig) (*Producer, error) {
 		log.Errorln("init kafka producer producer", err)
 		return nil, err
 	}
-	return &Producer{producer}, nil
+	return &Producer{
+		TopicName:    config.TopicName,
+		GroupId:      config.GroupId,
+		SyncProducer: producer,
+	}, nil
 }
