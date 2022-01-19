@@ -8,20 +8,20 @@ import (
 	"time"
 )
 
-type JavaLogParser struct {
+type RegexLogParser struct {
 	regx   *regexp.Regexp
 	fields []string
 }
 
-func NewJavaLogParser() *JavaLogParser {
+func NewJavaLogParser() *RegexLogParser {
 	var re = regexp.MustCompile(`(?ms)(.+)\s-\s(\w+)\s\[TxId\s:(.+),\sSpanId\s:(.+)].+\[(.+)]\s(\S+)\s+:\s(.+)`)
-	return &JavaLogParser{
+	return &RegexLogParser{
 		regx:   re,
 		fields: []string{"time", "level", "tx_id", "span_id", "thread", "method", "content"},
 	}
 }
 
-func (p *JavaLogParser) Parse(logMessage *sender.LogMessage) (*LogContent, error) {
+func (p *RegexLogParser) Parse(logMessage *sender.LogMessage) (*LogContent, error) {
 	matches := p.regx.FindStringSubmatch(logMessage.Content)
 	if matches == nil || len(matches) != len(p.fields)+1 {
 		return nil, errors.New("matches failed")
