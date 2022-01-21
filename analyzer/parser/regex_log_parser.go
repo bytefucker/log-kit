@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"github.com/yihongzhi/log-kit/collector/sender"
+	"github.com/yihongzhi/log-kit/config"
 	"regexp"
 	"strings"
 	"time"
@@ -13,11 +14,10 @@ type RegexLogParser struct {
 	fields []string
 }
 
-func NewJavaLogParser() *RegexLogParser {
-	var re = regexp.MustCompile(`(?ms)(.+)\s-\s(\w+)\s\[TxId\s:(.+),\sSpanId\s:(.+)].+\[(.+)]\s(\S+)\s+:\s(.+)`)
+func NewRegexLogParser(config *config.LogParserConfig) *RegexLogParser {
 	return &RegexLogParser{
-		regx:   re,
-		fields: []string{"time", "level", "tx_id", "span_id", "thread", "method", "content"},
+		regx:   regexp.MustCompile("(?ms)" + config.Pattern),
+		fields: config.Field,
 	}
 }
 

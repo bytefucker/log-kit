@@ -20,10 +20,10 @@ type Multiline struct {
 
 //日志解析器配置
 type AnalyzerConfig struct {
-	Parser []*LogParser `mapstructure:"parser"`
+	Parser []*LogParserConfig `mapstructure:"parser"`
 }
 
-type LogParser struct {
+type LogParserConfig struct {
 	AppId   string   `mapstructure:"app-id"`
 	Type    string   `mapstructure:"type"`
 	Pattern string   `mapstructure:"pattern"`

@@ -17,10 +17,9 @@ var log = logger.Log
 
 // LogAnalyzer 日志解析服务
 type LogAnalyzer struct {
-	TopName       string
 	EsClient      *elastic.ESClient
 	KafkaConsumer *kafka.Consumer
-	LogParser     parser.LogParser
+	LogParsers    map[string]parser.LogParser
 }
 
 func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
@@ -32,25 +31,32 @@ func NewLogAnalyzer(config *config.AppConfig) (*LogAnalyzer, error) {
 	if err != nil {
 		return nil, err
 	}
+	parsers := make(map[string]parser.LogParser)
+	for _, p := range config.Analyzer.Parser {
+		if p.Type == "regex" {
+			parsers[p.AppId] = parser.NewRegexLogParser(p)
+		} else if p.Type == "json" {
+			parsers[p.AppId] = parser.NewJsonLogParser(p)
+		}
+	}
 	return &LogAnalyzer{
-		TopName:       config.Kafka.TopicName,
 		EsClient:      esClient,
 		KafkaConsumer: kafkaConsumer,
-		LogParser:     nil,
+		LogParsers:    parsers,
 	}, nil
 }
 
 func (a *LogAnalyzer) Start() error {
 	h := &logMessageHandler{
-		parser: parser.NewJavaLogParser(),
-		client: a.EsClient,
+		parsers: a.LogParsers,
+		client:  a.EsClient,
 	}
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for {
-			if err := a.KafkaConsumer.Consume(context.Background(), []string{a.TopName}, h); err != nil {
+			if err := a.KafkaConsumer.Consume(context.Background(), []string{a.KafkaConsumer.TopicName}, h); err != nil {
 				// 当setup失败的时候，error会返回到这里
 				log.Errorf("Error from consumer: %v", err)
 				return
@@ -63,8 +69,8 @@ func (a *LogAnalyzer) Start() error {
 }
 
 type logMessageHandler struct {
-	parser parser.LogParser
-	client *elastic.ESClient
+	parsers map[string]parser.LogParser
+	client  *elastic.ESClient
 }
 
 func (h *logMessageHandler) Setup(session sarama.ConsumerGroupSession) error {
@@ -82,9 +88,12 @@ func (h *logMessageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, cl
 		if err != nil {
 			return err
 		}
-		content, err := h.parser.Parse(message)
-		if err == nil {
-			h.client.InsertDoc("alias_log_kit", content)
+		logParser := h.parsers[message.AppId]
+		if logParser != nil {
+			content, err := logParser.Parse(message)
+			if err == nil {
+				h.client.InsertDoc("alias_log_kit", content)
+			}
 		}
 		session.MarkMessage(msg, "")
 	}
