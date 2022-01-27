@@ -26,12 +26,6 @@
       "level": {
         "type": "keyword"
       },
-      "tx_id": {
-        "type": "keyword"
-      },
-      "span_id": {
-        "type": "keyword"
-      },
       "app_id": {
         "type": "keyword"
       },

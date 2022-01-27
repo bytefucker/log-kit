@@ -11,8 +11,6 @@ var log = logger.Log
 type LogContent struct {
 	Time      time.Time         `json:"time"`
 	Level     string            `json:"level"`
-	TxId      string            `json:"tx_id"`
-	SpanId    string            `json:"span_id"`
 	AppId     string            `json:"app_id"`
 	Host      string            `json:"host"`
 	ParseTime time.Time         `json:"parse_time"`
