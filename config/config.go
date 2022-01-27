@@ -24,10 +24,10 @@ type AnalyzerConfig struct {
 }
 
 type LogParserConfig struct {
-	AppId   string   `mapstructure:"app-id"`
-	Type    string   `mapstructure:"type"`
-	Pattern string   `mapstructure:"pattern"`
-	Field   []string `mapstructure:"field"`
+	AppId      string `mapstructure:"app-id"`
+	TimeFormat string `mapstructure:"time-format"`
+	Type       string `mapstructure:"type"`
+	Pattern    string `mapstructure:"pattern"`
 }
 
 // KafkaConfig Kafka配置

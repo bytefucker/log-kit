@@ -1,5 +1,5 @@
 port: 28080
-log-level: debug
+log-level: info
 buffer-size: 1000
 #kafka服务器
 kafka:
@@ -24,7 +24,7 @@ source:
 #解析器
 analyzer:
   parser:
-    - app-id: demo1
+    - app-id: galaxy_auth-1
+      time-format: "2006-01-02 15:04:05.000"
       type: regex
-      pattern: '(.+)\s-\s(\w+)\s\[TxId\s:(.+),\sSpanId\s:(.+)].+\[(.+)]\s(\S+)\s+:\s(.+)'
-      field: [ "time", "level", "tx_id", "span_id", "thread", "method", "content" ]
+      pattern: '(?P<time>.+)\s-\s*(?P<level>\w+)\s\[TxId\s:(?P<tx_id>.+),\sSpanId\s:(?P<span_id>.+)].+\[(?P<thread>.+)]\s(?P<method>\S+)\s+:\s(?P<content>.*)'

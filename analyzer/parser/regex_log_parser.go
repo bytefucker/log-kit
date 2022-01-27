@@ -5,48 +5,53 @@ import (
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/config"
 	"regexp"
-	"strings"
 	"time"
 )
 
 type RegexLogParser struct {
-	regx   *regexp.Regexp
-	fields []string
+	regx       *regexp.Regexp
+	timeFormat string
 }
 
 func NewRegexLogParser(config *config.LogParserConfig) *RegexLogParser {
 	return &RegexLogParser{
-		regx:   regexp.MustCompile("(?ms)" + config.Pattern),
-		fields: config.Field,
+		regx:       regexp.MustCompile("(?ms)" + config.Pattern),
+		timeFormat: config.TimeFormat,
 	}
 }
 
 func (p *RegexLogParser) Parse(logMessage *sender.LogMessage) (*LogContent, error) {
-	matches := p.regx.FindStringSubmatch(logMessage.Content)
-	if matches == nil || len(matches) != len(p.fields)+1 {
-		return nil, errors.New("matches failed")
+	strings := p.regx.FindStringSubmatch(logMessage.Content)
+	if strings == nil {
+		log.Warnf("log message has no match: appId=%s,content=%s", logMessage.AppId, logMessage.Content)
+		return nil, errors.New("log message has no match")
 	}
-	fieldMap := make(map[string]string, len(p.fields))
-	log.Debugln("------------------------------")
-	for i, match := range matches {
-		log.Debugln(i, "->", strings.TrimSpace(match))
-		if i > 0 {
-			fieldMap[p.fields[i-1]] = match
-		}
+	timeStr := p.matchedValue(strings, "time")
+	timeValue, err := time.Parse(p.timeFormat, timeStr)
+	if err != nil {
+		log.Warnln("parse log time error", err)
+		return nil, errors.New("parse log time error")
 	}
-	parse, _ := time.Parse("2006-01-02 15:04:05.000", fieldMap["time"])
 	return &LogContent{
-		Time:      parse,
-		Level:     fieldMap["level"],
-		TxId:      fieldMap["tx_id"],
-		SpanId:    fieldMap["span_id"],
 		AppId:     logMessage.AppId,
 		Host:      logMessage.Host,
 		ParseTime: time.Now(),
+		Time:      timeValue,
+		Level:     p.matchedValue(strings, "level"),
+		TxId:      p.matchedValue(strings, "tx_id"),
+		SpanId:    p.matchedValue(strings, "span_id"),
 		Field: map[string]string{
-			"thread": fieldMap["thread"],
-			"method": fieldMap["method"],
+			"thread": p.matchedValue(strings, "thread"),
+			"method": p.matchedValue(strings, "method"),
 		},
-		Content: fieldMap["content"],
+		Content: p.matchedValue(strings, "content"),
 	}, nil
+}
+
+func (p *RegexLogParser) matchedValue(strings []string, field string) string {
+	index := p.regx.SubexpIndex(field)
+	if index == -1 {
+		return ""
+	}
+	return strings[index]
 }
