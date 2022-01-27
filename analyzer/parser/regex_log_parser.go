@@ -5,6 +5,7 @@ import (
 	"github.com/yihongzhi/log-kit/collector/sender"
 	"github.com/yihongzhi/log-kit/config"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -48,10 +49,10 @@ func (p *RegexLogParser) Parse(logMessage *sender.LogMessage) (*LogContent, erro
 	}, nil
 }
 
-func (p *RegexLogParser) matchedValue(strings []string, field string) string {
+func (p *RegexLogParser) matchedValue(matchedStr []string, field string) string {
 	index := p.regx.SubexpIndex(field)
 	if index == -1 {
 		return ""
 	}
-	return strings[index]
+	return strings.Trim(matchedStr[index], " ")
 }
